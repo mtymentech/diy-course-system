@@ -3,7 +3,7 @@
 Plugin Name:  DIY Course System
 Plugin URI:   https://www.mymentech.com
 Description:  Basic WordPress Plugin to enhance custom functionality by MymenTech Team.
-Version:      1.1
+Version:      1.2
 Author:       MymenTech Team
 Author URI:   https://www.mymentech.com
 License:      GPL2
