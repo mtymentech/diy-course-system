@@ -126,8 +126,9 @@ function mt_my_courses_content() {
         $wc_product = $wc_product['wc_product'];
         $verify_purchase = apply_filters('current_user_purchased','not_purchased',$wc_product);
 
-        if('purchased'== $verify_purchase){
-            include_once(plugin_dir_path(__FILE__).'inc/my-courses.php');
+
+        if($verify_purchase = "purchased"){
+            include (plugin_dir_path(__FILE__).'inc/my-courses.php');
         }
 
     endwhile;
