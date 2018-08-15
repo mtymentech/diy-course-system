@@ -41,10 +41,6 @@ function mt_course_metabox(){
 add_action('init','mt_course_metabox');
 
 
-
-
-
-
 /**
  * @return array of all CooCommerce Products
  * @key = Product ID
@@ -140,12 +136,6 @@ function mt_my_courses_content() {
 
 
 
-function mt_get_post_content($post_id){
-    $content_post = get_post($post_id);
-    $content = $content_post->post_content;
-    $content = apply_filters('the_content', $content);
-    return $content;
-}
 
 
 function _ap($array){
