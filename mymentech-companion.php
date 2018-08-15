@@ -9,11 +9,17 @@ Author URI:   https://www.mymentech.com
 License:      GPL2
 License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  mt_companion
-
 */
+
+
+function mt_flush_rewrite_rules(){
+    flush_rewrite_rules();
+}
+register_activation_hook( __FILE__,'mt_flush_rewrite_rules');
 
 include_once(plugin_dir_path(__FILE__).'inc/post-types.php');
 include_once(plugin_dir_path(__FILE__).'codestar-framework/cs-framework.php');
+include_once(plugin_dir_path(__FILE__).'inc/cs-metaboxes.php');
 
 define( 'CS_ACTIVE_FRAMEWORK',   false  ); // default true
 define( 'CS_ACTIVE_METABOX',     true ); // default true
@@ -35,110 +41,7 @@ function mt_course_metabox(){
 add_action('init','mt_course_metabox');
 
 
-function mt_companion_cs_framework_options( $options ) {
-    /**
-     * Course MetaBox Information
-     */
-    $options[] = array(
-        'id'        => 'course-meta-info',
-        'title'     => __( 'Course Settings', 'mt_companion' ),
-        'post_type' => 'course',
-        'context'   => 'normal',
-        'priority'  => 'default',
-        'sections'  => array(
-            array(
-                'name'   => 'course-chapters',
-                'title'  => __( 'Course Information', 'mt_companion' ),
-                'icon'   => 'fa fa-image',
-                'fields' => array(
-                    array(
-                        'id'             => 'wc_product',
-                        'type'           => 'select',
-                        'title'          => 'Select WooCommerce Product',
-                        'options'        => 'posts',
-                        'query_args'     => array(
-                            'post_type'    => 'product',
-                        ),
-                        'default_option' => 'Select a Product',
-                    ),
 
-                    array(
-                        'id'              => 'chapters',
-                        'type'            => 'group',
-                        'title'           => __('Chapters','mt_companion'),
-                        'button_title'    => __('New chapter','mt_companion'),
-                        'accordion_title' => __('Add New Chapter','mt_companion'),
-                        'fields'          => array(
-                            array(
-                                'id'             => 'course-content',
-                                'type'           => 'select',
-                                'title'          => 'Selected Chapter',
-                                'options'        => 'posts',
-                                'query_args'     => array(
-                                    'post_type'    => 'course-contents',
-                                ),
-                                'default_option' => 'Select a Chapter',
-                            ),
-                        ),
-                    ),
-
-                )
-            ),
-        )
-    );
-
-
-
-
-    /**
-     * Chapter MetaBox Information
-     */
-
-    $options[]      = array(
-        'id'            => 'chapter-data',
-        'title'         => 'Contents of The Chapter',
-        'post_type'     => 'chapter', // or post or CPT or array( 'page', 'post' )
-        'context'       => 'normal',
-        'priority'      => 'default',
-        'sections'      => array(
-
-            // begin section
-            array(
-                'name'      => 'chapter_contents',
-                'title'     => 'Contents Of This Chapter',
-                'icon'      => 'fa fa-wifi',
-                'fields'    => array(
-
-                    array(
-                        'id'              => 'content-group',
-                        'type'            => 'group',
-                        'title'           => 'Courses',
-                        'button_title'    => 'Add Course',
-                        'accordion_title' => 'New Course',
-                        'fields'          => array(
-                            array(
-                                'id'             => 'course-content',
-                                'type'           => 'select',
-                                'title'          => 'Selected course',
-                                'options'        => 'posts',
-                                'query_args'     => array(
-                                    'post_type'    => 'course-contents',
-                                ),
-                                'default_option' => 'Select a course',
-                            ),
-
-                        ),
-                    ),
-
-                ),
-            ),
-        )
-    );
-
-    return $options;
-}
-
-add_filter( 'cs_metabox_options', 'mt_companion_cs_framework_options' );
 
 
 
@@ -173,12 +76,80 @@ function mt_wc_products(){
  * @return bool
  */
 
-function is_purchased_course($id) {
+function is_purchased_course($purchased, $id) {
     if ( is_user_logged_in() ) {
         $current_user = wp_get_current_user();
-        return wc_customer_bought_product( $current_user->user_email, $current_user->ID, $id);
+        if(wc_customer_bought_product( $current_user->user_email, $current_user->ID, $id)){
+            $purchased = 'purchased';
+        }
 
-    }else{
-        return false;
     }
+    return $purchased;
+}
+
+add_filter('current_user_purchased','is_purchased_course',10,2);
+
+
+
+function mt_woocommerce_account_menu_items($menu_links){
+    //Setting position of the menu item. Default is 2nd position.
+    $position = apply_filters('mt_my_courses_menu_position',2);
+    $position--;
+
+    return array_slice( $menu_links, 0, $position, true )
+        + array( 'my-courses' => __('My Courses','woocommerce') )
+        + array_slice( $menu_links, 2, NULL, true );
+}
+
+add_filter('woocommerce_account_menu_items','mt_woocommerce_account_menu_items');
+
+
+
+
+//Adding My courses Endpoint for WooCommerce My-Account page
+add_action( 'init', 'mt_my_course_add_endpoint' );
+function mt_my_course_add_endpoint(){
+    add_rewrite_endpoint( 'my-courses', EP_ROOT | EP_PAGES );
+}
+
+add_action( 'woocommerce_account_my-courses_endpoint', 'mt_my_courses_content' );
+
+function mt_my_courses_content() {
+    $course_args = array(
+        'post_type'=>'course',
+        'post_status'=>'published'
+    );
+    $course = new WP_Query($course_args);
+
+
+    printf('<div class="woocommerce-Message woocommerce-Message--success woocommerce-info">%s</div>',
+        __("The Courses you've enrolled in:","mt_companion"));
+    printf('<ul class="products columns-3 courses" data-product-style="classic">');
+    while($course->have_posts()):$course->the_post();
+        $wc_product = get_post_meta(get_the_ID(),'course-meta-info',true);
+        $wc_product = $wc_product['wc_product'];
+        $verify_purchase = apply_filters('current_user_purchased','not_purchased',$wc_product);
+
+        if('purchased'== $verify_purchase){
+            include_once(plugin_dir_path(__FILE__).'inc/my-courses.php');
+        }
+
+    endwhile;
+        printf('</ul>');
+}
+
+
+
+function mt_get_post_content($post_id){
+    $content_post = get_post($post_id);
+    $content = $content_post->post_content;
+    $content = apply_filters('the_content', $content);
+    return $content;
+}
+
+
+function _ap($array){
+    echo "<pre>";
+    print_r($array);
+    echo "</pre>";
 }
