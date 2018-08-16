@@ -75,7 +75,7 @@ function mt_wc_products(){
 function is_purchased_course($purchased, $id) {
     if ( is_user_logged_in() ) {
         $current_user = wp_get_current_user();
-        if(wc_customer_bought_product( $current_user->user_email, $current_user->ID, $id)){
+        if(wc_customer_bought_product( $current_user->user_email, $current_user->ID, $id) || current_user_can('edit_others_pages')){
             $purchased = 'purchased';
         }
 
@@ -84,6 +84,7 @@ function is_purchased_course($purchased, $id) {
 }
 
 add_filter('current_user_purchased','is_purchased_course',10,2);
+
 
 
 

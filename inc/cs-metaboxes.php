@@ -85,6 +85,12 @@ function mt_companion_cs_framework_options( $options ) {
                         'button_title'    => 'Add Course',
                         'accordion_title' => 'New Course',
                         'fields'          => array(
+
+                            array(
+                                'id'             => 'content-title',
+                                'type'           => 'text',
+                                'title'          => __('Content: ','mt_companion'),
+                            ),
                             array(
                                 'id'             => 'chapter-content',
                                 'type'           => 'select',
@@ -159,7 +165,7 @@ function mt_companion_cs_framework_options( $options ) {
                         'title'           => 'Enter Video Duration',
                         'attributes'    => array(
                             'placeholder' => 'In minute. Eg- 4:30',
-                          ),
+                        ),
                         'dependency'=> array( 'video-check', '==', '1' )
                     ),
 
