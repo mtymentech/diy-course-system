@@ -56,17 +56,14 @@ function mt_companion_cs_framework_options($options) {
                         'accordion_title' => __('Add New Chapter', 'mt_companion'),
                         'fields'          => array(
                             array(
-                                'id'    => 'chapter-title',
-                                'type'  => 'text',
-                                'title' => __('Selected Chapter', 'mt_companion'),
-                            ),
-                            array(
                                 'id'             => 'course-chapter',
                                 'type'           => 'select',
                                 'title'          => 'Selected Chapter',
                                 'options'        => 'posts',
                                 'query_args'     => array(
                                     'post_type' => 'chapter',
+                                    'post_status' =>'publish',
+                                    'posts_per_page' => -1,
                                 ),
                                 'default_option' => 'Select a Chapter',
                             ),
@@ -94,32 +91,29 @@ function mt_companion_cs_framework_options($options) {
             // begin section
             array(
                 'name'   => 'chapter_contents',
-                'title'  => 'Contents Of This Chapter',
+                'title'  => __('Contents Of This Chapter','mt_companion'),
                 'icon'   => 'fa fa-wifi',
                 'fields' => array(
 
                     array(
                         'id'              => 'content-group',
                         'type'            => 'group',
-                        'title'           => 'Courses',
-                        'button_title'    => 'Add Course',
-                        'accordion_title' => 'New Course',
+                        'title'           => 'Contents',
+                        'button_title'    => __('Add Content','mt_companion'),
+                        'accordion_title' => __('New Content','mt_companion'),
                         'fields'          => array(
 
                             array(
-                                'id'    => 'content-title',
-                                'type'  => 'text',
-                                'title' => __('Content: ', 'mt_companion'),
-                            ),
-                            array(
                                 'id'             => 'chapter-content',
                                 'type'           => 'select',
-                                'title'          => 'Selected course',
+                                'title'          => __('Content','mt_companion'),
                                 'options'        => 'posts',
                                 'query_args'     => array(
                                     'post_type' => 'course-contents',
+                                    'post_status' =>'publish',
+                                    'posts_per_page' => -1,
                                 ),
-                                'default_option' => 'Select a course',
+                                'default_option' => 'Select a content',
                             ),
 
                         ),
